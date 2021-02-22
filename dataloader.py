@@ -26,6 +26,9 @@ dataloaders are defined in this scripts:
         (c). Testing stage:     test the model on ADNI_test, NACC, FHS and AIBL datasets
 """
 
+#Check if CNN_Data is going to be ever needed in this and how
+#Recheck where it is getting in the data from
+
 class FCN_Data(Dataset):
     def __init__(self,
                  Data_dir,
