@@ -25,7 +25,7 @@ model wrapper class are defined in this scripts which includes the following met
 
 
 class FCN_Wrapper:
-
+    
     def __init__(self, fil_num,
                        drop_rate,
                        seed,
