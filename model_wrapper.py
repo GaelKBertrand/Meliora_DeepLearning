@@ -69,53 +69,7 @@ class FCN_Wrapper:
         if not os.path.exists(self.DPMs_dir):
             os.mkdir(self.DPMs_dir)
 
-    def train(self, lr, epochs):
-        self.optimizer = optim.Adam(self.model.parameters(), lr=lr, betas=(0.5, 0.999))
-        self.criterion = nn.CrossEntropyLoss(weight=torch.Tensor([1, self.imbalanced_ratio])).cuda()
-        self.optimal_valid_matrix = [[0, 0], [0, 0]]
-        self.optimal_valid_metric = 0
-        self.optimal_epoch        = -1
-        for self.epoch in range(epochs):
-            self.train_model_epoch()
-            if self.epoch % 20 == 0:
-                valid_matrix = self.valid_model_epoch()
-                print('{}th epoch validation confusion matrix:'.format(self.epoch), valid_matrix, 'eval_metric:', "%.4f" % self.eval_metric(valid_matrix))
-                self.save_checkpoint(valid_matrix)
-        print('Best model saved at the {}th epoch:'.format(self.optimal_epoch), self.optimal_valid_metric, self.optimal_valid_matrix)
-        return self.optimal_valid_metric
-
-    def valid_model_epoch(self):
-        self.fcn = self.model.dense_to_conv()
-        DPMs, Labels = [], []
-        with torch.no_grad():
-            self.fcn.train(False)
-            for idx, (inputs, labels) in enumerate(self.valid_dataloader):
-                inputs, labels = inputs.cuda(), labels.cuda()
-                DPM = self.fcn(inputs, stage='inference')
-                DPMs.append(DPM.cpu().numpy().squeeze())
-                Labels.append(labels)
-        valid_matrix, ACCU, F1, MCC = DPM_statistics(DPMs, Labels)
-        return valid_matrix
-
-    def prepare_dataloader(self, batch_size, balanced, Data_dir):
-        train_data = FCN_Data(Data_dir, self.exp_idx, stage='train', seed=self.seed, patch_size=self.patch_size)
-        valid_data = FCN_Data(Data_dir, self.exp_idx, stage='valid', seed=self.seed, patch_size=self.patch_size)
-        test_data  = FCN_Data(Data_dir, self.exp_idx, stage='test', seed=self.seed, patch_size=self.patch_size)
-        sample_weight, self.imbalanced_ratio = train_data.get_sample_weights()
-        # the following if else blocks represent two ways of handling class imbalance issue
-        if balanced == 1:
-            # use pytorch sampler to sample data with probability according to the count of each class
-            # so that each mini-batch has the same expectation counts of samples from each class
-            sampler = torch.utils.data.sampler.WeightedRandomSampler(sample_weight, len(sample_weight))
-            self.train_dataloader = DataLoader(train_data, batch_size=batch_size, sampler=sampler)
-            self.imbalanced_ratio = 1
-        elif balanced == 0:
-            # sample data from the same probability, but
-            # self.imbalanced_ratio will be used in the weighted cross entropy loss to handle imbalanced issue
-            self.train_dataloader = DataLoader(train_data, batch_size=batch_size, shuffle=True, drop_last=True)
-        self.valid_dataloader = DataLoader(valid_data, batch_size=1, shuffle=False)
-        self.test_dataloader = DataLoader(test_data, batch_size=1, shuffle=False)
-
+   
     def test_and_generate_DPMs(self):
         print('testing and generating DPMs ... ')
         self.model.load_state_dict(torch.load('{}{}_{}.pth'.format(self.checkpoint_dir, self.model_name, self.optimal_epoch)))
