@@ -7,3 +7,4 @@
 !pip install numpy
 !pip install tqdm
 !pip install nibabel
+!pip install niftyreg
