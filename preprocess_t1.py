@@ -87,7 +87,7 @@ def back_remove(file, temp, new_path):
 
 
 if __name__ == "__main__":
-    reference = '/media/medetax/data04/atlases/Templates/mni_icbm152_nlin_sym_09c/mni_icbm152_t1_tal_nlin_sym_09c_1mm_181x217x181.nii.gz'
+    reference = '/Meliora_DeepLearning/mni_icbm152_t1_tal_nlin_sym_09c_1mm_181x217x181.nii.gz'
     tmp = tempfile.TemporaryDirectory()
     args = get_args()
     in_anat = args.anat
